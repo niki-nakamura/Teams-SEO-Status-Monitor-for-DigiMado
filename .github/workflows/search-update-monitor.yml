@@ -2,9 +2,7 @@ name: Search Update Monitor
 
 on:
   schedule:
-    # 毎日朝9時に実行 (UTCなので、必要に応じて調整)
     - cron: '0 0 * * *'
-  # リポジトリにpushしたときなどに手動でテストしたい場合
   workflow_dispatch:
 
 jobs:
@@ -15,11 +13,11 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v3
 
-  　　- name: Set up Node
-  　　　uses: actions/setup-node@v3
-  　　　with:
-    　　　node-version: 18
-       
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
       - name: Install dependencies
         run: npm install
 
