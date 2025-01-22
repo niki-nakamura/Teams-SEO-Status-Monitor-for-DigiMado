@@ -7,7 +7,7 @@
     "monitor": "node .github/workflows/monitor.js"
   },
   "dependencies": {
-    "rss-parser": "^3.14.0",
+    "rss-parser": "^3.13.0",
     "node-fetch": "^3.3.0"
   }
 }
