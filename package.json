@@ -6,7 +6,6 @@
   "scripts": {
     "monitor": "node monitor.js"
   },
-{
   "type": "module",
   "dependencies": {
     "rss-parser": "^3.13.0",
