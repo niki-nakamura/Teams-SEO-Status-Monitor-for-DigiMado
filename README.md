@@ -1,0 +1,2 @@
+# teams-bot-search-update-monitor
+Google検索アルゴリズムやランキング関連の最新アップデート情報を自動的に取得し、Teamsで通知するボット
