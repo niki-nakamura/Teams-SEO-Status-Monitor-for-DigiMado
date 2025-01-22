@@ -1,4 +1,5 @@
-// monitor.js
+import fetch from 'node-fetch';
+import Parser from 'rss-parser';
 const fetch = require('node-fetch');
 const Parser = require('rss-parser'); // npm install rss-parser
 const parser = new Parser();
