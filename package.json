@@ -4,7 +4,7 @@
   "description": "Monitor Google search updates and send alerts to Teams",
   "main": ".github/workflows/monitor.js",
   "scripts": {
-    "monitor": "node .github/workflows/monitor.js"
+    "monitor": "node .monitor.js"
   },
   "dependencies": {
     "rss-parser": "^3.13.0",
