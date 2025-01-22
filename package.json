@@ -2,9 +2,9 @@
   "name": "teams-bot-search-update-monitor",
   "version": "1.0.0",
   "description": "Monitor Google search updates and send alerts to Teams",
-  "main": ".github/workflows/monitor.js",
+  "main": ".monitor.js",
   "scripts": {
-    "monitor": "node .monitor.js"
+    "monitor": "node monitor.js"
   },
   "dependencies": {
     "rss-parser": "^3.13.0",
