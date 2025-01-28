@@ -1,4 +1,3 @@
-以下の手順と解説では、**非エンジニアでもできるだけ簡単に実装**できるように、なるべく噛み砕いて説明します。  
 最終的には、**GitHubリポジトリを作成**して、**GitHub Actionsの定期実行（スケジューリング）**で  
 1. Google公式ブログやSearch Central Blog、SEMrush（セムラッシュ）のアップデート情報（ブログやRSS、あるいはSensor情報など）を自動チェック  
 2. 新しい更新があったらTeamsにアラートを送る（BOTまたはWebhook）  
@@ -247,8 +246,6 @@ npm install node-fetch rss-parser
 - **Teams Incoming Webhook**を取得 → **GitHub Secrets**に登録 (例: `TEAMS_WEBHOOK_URL`)  
 - **Node.jsのスクリプト**などでRSS（Google公式ブログ、Search Central Blog、SEMrushなど）を取得 → 差分チェック  
 - **新着があれば**Teamsへ通知  
-
-この流れで**誰でも比較的容易に**自動化ができます。
 
 ---
 
