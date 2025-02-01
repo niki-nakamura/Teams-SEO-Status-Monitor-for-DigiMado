@@ -1,17 +1,20 @@
-name: Search Update Monitor
+name: Monitor GoogleSearchCentral Tweets
 
 on:
-  schedule:
-    - cron: '0 0 * * *'
   workflow_dispatch:
+  schedule:
+    - cron: '*/30 * * * *'  # 30分おきに実行
 
 jobs:
-  check-updates-and-alert:
+  check-for-new-tweets:
     runs-on: ubuntu-latest
-
+    permissions:
+      contents: write
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Set up Node
         uses: actions/setup-node@v3
@@ -19,9 +22,10 @@ jobs:
           node-version: 18
 
       - name: Install dependencies
-        run: npm install
+        run: npm install node-fetch@2
 
-      - name: Run update monitor script
+      - name: Run tweet monitoring script
         run: node monitor.js
         env:
           TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
+          TWITTER_BEARER_TOKEN: ${{ secrets.TWITTER_BEARER_TOKEN }}
