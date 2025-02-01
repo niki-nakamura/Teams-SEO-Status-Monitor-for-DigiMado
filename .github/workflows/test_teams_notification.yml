@@ -1,0 +1,25 @@
+name: Test Teams Notification
+
+on:
+  workflow_dispatch:  # 手動トリガー
+
+jobs:
+  test-teams-notification:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm install node-fetch@2
+
+      - name: Run test script for Teams notification
+        run: node testTeamsNotification.js
+        env:
+          TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
