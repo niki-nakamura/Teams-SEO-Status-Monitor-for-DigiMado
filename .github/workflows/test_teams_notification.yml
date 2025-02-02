@@ -20,6 +20,6 @@ jobs:
         run: npm install node-fetch@2
 
       - name: Run test script for Teams notification
-        run: node test/testTeamsNotification.js
+        run: node test/testTeamsNotification.cjs
         env:
           TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
