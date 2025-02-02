@@ -1,7 +1,7 @@
 /* monitor.js */
-const fs = require('fs');
-const fetch = require('node-fetch');
-const { execSync } = require('child_process');
+import fs from 'fs';
+import fetch from 'node-fetch';
+import { execSync } from 'child_process';
 
 // Teams用Webhook URLに変更
 const TEAMS_WEBHOOK_URL = process.env.TEAMS_WEBHOOK_URL;
