@@ -16,6 +16,11 @@ visited = set()
 # broken_links は (参照元, 壊れているリンク, ステータス) のタプル形式
 broken_links = []
 
+# ブラウザ風の User-Agent を設定
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
+}
+
 def is_internal_link(url):
     parsed = urlparse(url)
     return (parsed.netloc == "" or parsed.netloc.endswith(BASE_DOMAIN))
@@ -30,10 +35,14 @@ def crawl(start_url):
 
         if is_internal_link(current):
             try:
-                resp = requests.get(current, timeout=10)
+                resp = requests.get(current, headers=HEADERS, timeout=10)
+                # もしメインページで 403 が返っている場合はエラー登録せずに処理を継続する
                 if resp.status_code >= 400:
-                    broken_links.append((current, current, resp.status_code))
-                    continue
+                    if current == START_URL and resp.status_code == 403:
+                        print(f"[Info] メインページ {current} が 403 を返しましたが、エラー対象から除外します。")
+                    else:
+                        broken_links.append((current, current, resp.status_code))
+                        continue
                 soup = BeautifulSoup(resp.text, 'html.parser')
                 for a in soup.find_all('a', href=True):
                     link = urljoin(current, a['href'])
@@ -49,7 +58,7 @@ def crawl(start_url):
 
 def check_status(url, source):
     try:
-        r = requests.head(url, timeout=5)
+        r = requests.head(url, headers=HEADERS, timeout=5)
         if r.status_code >= 400:
             ref = source if source else url
             broken_links.append((ref, url, r.status_code))
@@ -64,17 +73,20 @@ def send_teams_notification(broken):
 
     msg = "\n"
     msg += "404チェック結果🗣📢\n\n"
-    msg += "以下の検出された404（またはリンク切れ）の情報です:\n\n"
+    msg += "👇以下の検出された404（またはリンク切れ）の情報です👇\n\n"
 
     if not broken:
         msg += "No broken links found!\n"
     else:
         for source, url, status in broken:
-            msg += f"- {url} [Status: {status}]\n"
+            msg += f"{url} [Status: {status}]\n"
             msg += f"検出記事元：{source}\n\n"
 
     try:
-        requests.post(TEAMS_WEBHOOK_URL, json={"text": msg}, timeout=10)
+        r = requests.post(TEAMS_WEBHOOK_URL, json={"text": msg}, headers=HEADERS, timeout=10)
+        # Teams は成功時に 200 または 204 を返すので、それ以外はエラーとして扱う
+        if r.status_code not in [200, 204]:
+            print(f"Teams notification failed with status {r.status_code}: {r.text}")
     except Exception as e:
         print(f"Teams notification failed: {e}")
 
