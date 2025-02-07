@@ -96,10 +96,6 @@ def check_404_urls(url_list):
     return not_found
 
 def send_teams_notification(message):
-    """
-    Teams の Webhook に対してメッセージを POST する。
-    ※ Teams は基本的に {"text": "..."} の形式のシンプルなペイロードを受け付けます。
-    """
     if not TEAMS_WEBHOOK_URL:
         print("[Error] TEAMS_WEBHOOK_URL is not set.")
         return
@@ -107,7 +103,7 @@ def send_teams_notification(message):
     payload = {"text": message}
     try:
         r = requests.post(TEAMS_WEBHOOK_URL, json=payload, timeout=10)
-        if r.status_code != 200:
+        if r.status_code not in [200, 204]:
             print(f"[Error] Teams responded with status {r.status_code}: {r.text}")
     except Exception as e:
         print(f"[Error] Failed to send Teams notification: {e}")
