@@ -89,7 +89,7 @@ def check_404_urls(url_list):
     for u in url_list:
         try:
             resp = requests.get(u, timeout=10)
-            if resp.status_code == 404:
+            if r.status_code not in [200, 204]:
                 not_found.append(u)
         except Exception as e:
             print(f"[Warning] Request error for {u}: {e}")
