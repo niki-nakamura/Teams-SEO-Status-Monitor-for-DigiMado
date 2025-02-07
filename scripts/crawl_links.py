@@ -71,20 +71,26 @@ def send_teams_notification(broken):
         print("TEAMS_WEBHOOK_URL is not set.")
         return
 
-    msg = "\n"
-    msg += "404チェック結果🗣📢\n\n"
-    msg += "👇以下の検出された404（またはリンク切れ）の情報です👇\n\n"
+    msg_lines = []
+    # ヘッダー部分：各セクションの前後に「.」を挿入
+    msg_lines.append(".")
+    msg_lines.append("404チェック結果🗣📢")
+    msg_lines.append(".")
+    msg_lines.append("👇以下の検出された404（またはリンク切れ）の情報です👇")
+    msg_lines.append(".")
 
     if not broken:
-        msg += "No broken links found!\n"
+        msg_lines.append("No broken links found!")
+        msg_lines.append(".")
     else:
         for source, url, status in broken:
-            msg += f"{url} [Status: {status}]\n"
-            msg += f"検出記事元：{source}\n\n"
+            msg_lines.append(f"{url} [Status: {status}]")
+            msg_lines.append(f"検出記事元：{source}")
+            msg_lines.append(".")
 
+    msg = "\n".join(msg_lines)
     try:
         r = requests.post(TEAMS_WEBHOOK_URL, json={"text": msg}, headers=HEADERS, timeout=10)
-        # Teams は成功時に 200 または 204 を返すので、それ以外はエラーとして扱う
         if r.status_code not in [200, 204]:
             print(f"Teams notification failed with status {r.status_code}: {r.text}")
     except Exception as e:
