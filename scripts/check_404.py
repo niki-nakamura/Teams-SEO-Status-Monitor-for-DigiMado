@@ -8,14 +8,10 @@ import os
 # Teams の Webhook URL（GitHub Secretsにて登録し、envで読み込む）
 TEAMS_WEBHOOK_URL = os.environ.get("TEAMS_WEBHOOK_URL")
 
-# メインサイトマップ（調査対象URLを digi-mado.jp に変更）
+# メインサイトマップ（調査対象URL：digi-mado.jp）
 MAIN_SITEMAP_URL = "https://digi-mado.jp/sitemap.xml"
 
 def fetch_sitemap(url):
-    """
-    指定したサイトマップURLを取得し、XMLのルート要素を返す。
-    失敗時は None。
-    """
     try:
         r = requests.get(url, timeout=20)
         if r.status_code == 200:
@@ -26,10 +22,6 @@ def fetch_sitemap(url):
     return None
 
 def extract_sitemap_urls(sitemap_root):
-    """
-    ルート要素から <loc> を持つサブサイトマップURLをリストで返す。
-    例: <sitemap><loc>～</loc></sitemap> のURL
-    """
     urls = []
     if sitemap_root is None:
         return urls
@@ -41,9 +33,6 @@ def extract_sitemap_urls(sitemap_root):
     return urls
 
 def extract_page_urls(sitemap_root):
-    """
-    サブサイトマップから <url><loc>～</loc></url> のURLを取得。
-    """
     urls = []
     if sitemap_root is None:
         return urls
@@ -55,17 +44,12 @@ def extract_page_urls(sitemap_root):
     return urls
 
 def get_all_urls_from_sitemaps(url):
-    """
-    メインサイトマップ -> サブサイトマップ -> 各URL の階層を再帰的にたどり、
-    すべてのURL（最終的にWebページへのリンク）を集めて返す。
-    """
     all_urls = []
     root = fetch_sitemap(url)
     if root is None:
         return all_urls
 
     subs = extract_sitemap_urls(root)
-
     if subs:
         for sub in subs:
             sub_root = fetch_sitemap(sub)
@@ -82,14 +66,12 @@ def get_all_urls_from_sitemaps(url):
     return all_urls
 
 def check_404_urls(url_list):
-    """
-    各URLに GET リクエストを行い、404のURLをリストで返す。
-    """
     not_found = []
     for u in url_list:
         try:
             resp = requests.get(u, timeout=10)
-            if r.status_code not in [200, 204]:
+            # 404エラーのみを検出
+            if resp.status_code == 404:
                 not_found.append(u)
         except Exception as e:
             print(f"[Warning] Request error for {u}: {e}")
@@ -110,20 +92,13 @@ def send_teams_notification(message):
 
 def main():
     print("[Info] Starting 404 check ...")
-
-    # 1) サイトマップから全URLを抽出
     all_urls = get_all_urls_from_sitemaps(MAIN_SITEMAP_URL)
     print(f"[Info] Found {len(all_urls)} URLs in sitemap(s).")
-
-    # 2) 404のURLをチェック
     not_found_urls = check_404_urls(all_urls)
-
-    # 3) Teams 通知
     if not not_found_urls:
         message = "【404チェック結果】\n404は検出されませんでした。"
     else:
         message = "【404チェック結果】\n以下のURLが404でした:\n" + "\n".join(not_found_urls)
-
     print("[Info] Sending Teams notification...")
     send_teams_notification(message)
     print("[Info] Done.")
