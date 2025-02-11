@@ -75,7 +75,7 @@ jobs:
 ## 2. `scripts/check_404.py`
 
 以下のPythonスクリプトは、  
-- **トップのサイトマップ**(`https://good-apps.jp/sitemap.xml`)を取得  
+- **トップのサイトマップ**(`https://example-apps.jp/sitemap.xml`)を取得  
 - 中に列挙されている**サブサイトマップ**(例えば `sitemap-pt-post-p1-2025-01.xml` など)を再帰的に取得し、  
 - そこに含まれる**全URL**を`requests.get()`でチェック  
 - ステータスコードが**404**のURLだけをSlackに通知  
@@ -93,7 +93,7 @@ import os
 SLACK_WEBHOOK_URL = os.environ.get("SLACK_WEBHOOK_URL")
 
 # メインサイトマップ
-MAIN_SITEMAP_URL = "https://good-apps.jp/sitemap.xml"
+MAIN_SITEMAP_URL = "https://example-apps.jp/sitemap.xml"
 
 def fetch_sitemap(url):
     """
@@ -227,7 +227,7 @@ if __name__ == "__main__":
 ```
 
 ### スクリプトの動作概要
-1. **`MAIN_SITEMAP_URL`**（`https://good-apps.jp/sitemap.xml`）を取得。  
+1. **`MAIN_SITEMAP_URL`**（`https://example-apps.jp/sitemap.xml`）を取得。  
 2. **`extract_sitemap_urls()`** で「サブサイトマップ」があるか確認し、再帰的にたどる。  
 3. **`extract_page_urls()`** で実際の「投稿ページのURL」を抽出。  
 4. 全URLに対し**GETリクエスト**を送信し、**`404`のみ抽出**。  
