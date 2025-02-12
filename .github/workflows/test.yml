@@ -17,9 +17,6 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Install dependencies
-        run: npm install
-
       - name: Run Teams Test Script
         run: node scripts/test_teams.js
         env:
