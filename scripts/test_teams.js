@@ -1,36 +1,23 @@
-/* test_teams.js */
-const fetch = require('node-fetch');
+function createTeamsMessageForTest() {
+  // テスト用ツイート URL（プレビュー用のパラメータ付与）
+  const testTweetUrl = 'https://x.com/googlesearchc/status/1873848143168889194?test=123';
 
-// Teams用Webhook URL（環境変数）
-const TEAMS_WEBHOOK_URL2 = process.env.TEAMS_WEBHOOK_URL2;
-
-async function postTestMessageToTeams() {
-  // シンプルなペイロード例
-  const payload = { text: "Test message from Teams webhook test." };
-
-  const response = await fetch(TEAMS_WEBHOOK_URL2, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  });
-
-  if (!response.ok) {
-    throw new Error(`Teams Webhook error: ${response.status} ${response.statusText}`);
-  }
-  console.log('✅ テストメッセージをTeamsに送信しました。');
+  return {
+    "@type": "MessageCard",
+    "@context": "https://schema.org/extensions", // https に変更
+    "summary": "Google Search Central のXアカウント更新",
+    "themeColor": "0076D7",
+    "title": "Google Search Central のXアカウントが更新されました!!",
+    // シンプルなテキストに変更（リンクは potentialAction で設定）
+    "text": "Google Search Central's X account has been updated!",
+    "potentialAction": [
+      {
+        "@type": "OpenUri",
+        "name": "X(Twitter)で詳細を見る",
+        "targets": [
+          { "os": "default", "uri": testTweetUrl }
+        ]
+      }
+    ]
+  };
 }
-
-// 実行
-(async function main() {
-  try {
-    if (!TEAMS_WEBHOOK_URL2) {
-      console.error('環境変数 TEAMS_WEBHOOK_URL2 が設定されていません。');
-      process.exit(1);
-    }
-    await postTestMessageToTeams();
-    process.exit(0);
-  } catch (error) {
-    console.error('エラー:', error);
-    process.exit(1);
-  }
-})();
