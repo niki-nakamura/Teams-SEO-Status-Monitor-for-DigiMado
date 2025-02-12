@@ -4,35 +4,9 @@ const fetch = require('node-fetch');
 // Teams用Webhook URL（環境変数）
 const TEAMS_WEBHOOK_URL2 = process.env.TEAMS_WEBHOOK_URL2;
 
-/**
- * Teams向けのMessageCardペイロードを作成する関数
- * - タイトル、本文、リンクボタンを含むカードを生成
- */
-function createTeamsMessageForTest() {
-  // テスト用のツイートURL（プレビュー用のパラメータ付与）
-  const testTweetUrl = 'https://x.com/googlesearchc/status/1873848143168889194?test=123';
-
-  return {
-    "@type": "MessageCard",
-    "@context": "http://schema.org/extensions",  // ← 変更：httpsからhttpへ
-    "summary": "Google Search Central のXアカウント更新",
-    "themeColor": "0076D7",
-    "title": "Google Search Central のXアカウントが更新されました!!",
-    "text": `Google Search Central's X account has been updated!\n\n[詳細を見る](${testTweetUrl})`,
-    "potentialAction": [
-      {
-        "@type": "OpenUri",
-        "name": "X(Twitter)で詳細を見る",
-        "targets": [
-          { "os": "default", "uri": testTweetUrl }
-        ]
-      }
-    ]
-  };
-}
-
 async function postTestMessageToTeams() {
-  const payload = createTeamsMessageForTest();
+  // シンプルなペイロード例
+  const payload = { text: "Test message from Teams webhook test." };
 
   const response = await fetch(TEAMS_WEBHOOK_URL2, {
     method: 'POST',
