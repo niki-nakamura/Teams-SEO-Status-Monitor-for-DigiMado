@@ -1,25 +1,34 @@
-name: ScheduledTeamsAnnouncement
+name: Monitor GoogleSearchCentral Tweets to Teams
 
 on:
-  schedule:
-    - cron: '0 23 * * *'  # 毎日UTC0時（日本時間午前9時）に実行
   workflow_dispatch:
+  schedule:
+    - cron: '*/30 * * * *'  # 30分おきに実行
 
 jobs:
-  run_script:
+  check-for-new-tweets-teams:
     runs-on: ubuntu-latest
+    # latest_tweet_id.json のコミット・プッシュ権限
+    permissions:
+      contents: write
     steps:
-      - uses: actions/checkout@v2
-
-      - name: Set up Python
-        uses: actions/setup-python@v2
+      - name: Check out repository
+        uses: actions/checkout@v3
         with:
-          python-version: '3.x'
+          fetch-depth: 0
 
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      # node-fetch を利用するためインストール
       - name: Install dependencies
-        run: pip install requests beautifulsoup4
+        run: npm install node-fetch@2
 
-      - name: Run Teams announce script
-        run: python scripts/main_announce_teams.py
+      # Teams向けの監視スクリプトを実行
+      - name: Run tweet monitoring script for Teams
+        run: node scripts/monitor_teams.js
         env:
           TEAMS_WEBHOOK_URL2: ${{ secrets.TEAMS_WEBHOOK_URL2 }}
+          TWITTER_BEARER_TOKEN: ${{ secrets.TWITTER_BEARER_TOKEN }}
