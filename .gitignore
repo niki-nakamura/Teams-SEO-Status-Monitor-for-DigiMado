@@ -1,0 +1,2 @@
+# 認証情報ファイルはコミットしない
+config/credentials.json
