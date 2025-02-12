@@ -14,7 +14,7 @@ function createTeamsMessageForTest() {
 
   return {
     "@type": "MessageCard",
-    "@context": "https://schema.org/extensions",
+    "@context": "http://schema.org/extensions",  // ← 変更：httpsからhttpへ
     "summary": "Google Search Central のXアカウント更新",
     "themeColor": "0076D7",
     "title": "Google Search Central のXアカウントが更新されました!!",
@@ -60,4 +60,3 @@ async function postTestMessageToTeams() {
     process.exit(1);
   }
 })();
-
