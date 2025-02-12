@@ -38,12 +38,15 @@ def crawl(start_url):
         if current in visited:
             continue
         visited.add(current)
+        print(f"[DEBUG] Crawling: {current}")  # デバッグ用出力
 
         if is_internal_link(current):
             try:
                 resp = requests.get(current, headers=HEADERS, timeout=10)
+                print(f"[DEBUG] Fetched {current} - Status: {resp.status_code}")
                 # 404のみを対象とする
                 if resp.status_code == 404:
+                    print(f"[DEBUG] 404 detected at {current}")
                     broken_links.append((current, current, resp.status_code))
                     continue
                 soup = BeautifulSoup(resp.text, 'html.parser')
@@ -51,12 +54,14 @@ def crawl(start_url):
                     link = urljoin(current, a['href'])
                     # フラグメントを除去
                     link = urlparse(link)._replace(fragment="").geturl()
+                    print(f"[DEBUG] Found link: {link}")
                     # 発リンクもチェック対象とする
                     if not is_internal_link(link):
                         check_status(link, current)
                     if link not in visited:
                         queue.append(link)
             except Exception as e:
+                print(f"[DEBUG] Exception while processing {current}: {e}")
                 broken_links.append((current, current, f"Error: {str(e)}"))
         else:
             check_status(current, None)
@@ -64,12 +69,15 @@ def crawl(start_url):
 def check_status(url, source):
     try:
         r = requests.head(url, headers=HEADERS, timeout=5)
+        print(f"[DEBUG] Checking external URL: {url} - Status: {r.status_code}")
         # 404エラーのみをエラー対象とする
         if r.status_code == 404:
             ref = source if source else url
+            print(f"[DEBUG] 404 detected at external URL: {url} (ref: {ref})")
             broken_links.append((ref, url, r.status_code))
     except Exception as e:
         ref = source if source else url
+        print(f"[DEBUG] Exception while checking {url}: {e}")
         broken_links.append((ref, url, f"Error: {str(e)}"))
 
 def update_google_sheet(broken):
@@ -77,13 +85,13 @@ def update_google_sheet(broken):
     Google SheetsのA列に404（またはリンク切れ）URL、B列に検出元記事URLを追加する。
     """
     scope = ["https://www.googleapis.com/auth/spreadsheets"]
-    # ここでは service_account.json を利用（ワークフローで作成される一時ファイル）
     creds = Credentials.from_service_account_file("service_account.json", scopes=scope)
     client = gspread.authorize(creds)
     sheet = client.open_by_key(GOOGLE_SHEET_ID).sheet1
 
     for source, url, status in broken:
         row = [url, source]
+        print(f"[DEBUG] Appending row to sheet: {row}")
         sheet.append_row(row)
 
 def send_teams_notification(broken):
@@ -95,9 +103,9 @@ def send_teams_notification(broken):
     try:
         r = requests.post(TEAMS_WEBHOOK_URL, json={"text": msg}, headers=HEADERS, timeout=10)
         if r.status_code not in [200, 204]:
-            print(f"Teams notification failed with status {r.status_code}: {r.text}")
+            print(f"[DEBUG] Teams notification failed with status {r.status_code}: {r.text}")
     except Exception as e:
-        print(f"Teams notification failed: {e}")
+        print(f"[DEBUG] Teams notification failed: {e}")
 
 def main():
     print(f"Starting crawl from {START_URL}")
