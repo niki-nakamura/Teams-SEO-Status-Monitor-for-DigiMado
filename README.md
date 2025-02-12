@@ -8,14 +8,20 @@
 404-error-handling-and-SEO-optimization
 ├─ .github
 │   └─ workflows
-│       └─ check_404.yml            # GitHub Actionsの設定ファイル
+│       ├─ check_404.yml              # 既存：404チェック用
+│       └─ tweet_monitor_teams.yml    # 新規：Teams向けツイート監視ワークフロー
 ├─ scripts
-│   └─ check_404.py                 # 実際のスクリプト本体
-│   └─ crawl_links.py               
+│   ├─ check_404.py                   # 既存：404チェック用スクリプト
+│   ├─ crawl_links.py                 # 既存：リンククローラー
+│   ├─ test_slack.js                  # 既存：Slack送信用テストスクリプト
+│   ├─ monitor.js                     # 既存：Slack用ツイート監視スクリプト
+│   ├─ test_teams.js                  # 新規：Teams送信用テストスクリプト
+│   └─ monitor_teams.js               # 新規：Teams用ツイート監視スクリプト
 ├─ .gitignore
-├─ README.md                        # リポジトリ全体の説明書
+├─ README.md                        # リポジトリ全体の説明書（必要に応じTeamsボットの説明を追記）
 ├─ flow.md               
 └─ requirements.txt                 # Python依存パッケージのリスト
+
 ```
 
 1. **`.github/workflows/check_404.yml`**  
