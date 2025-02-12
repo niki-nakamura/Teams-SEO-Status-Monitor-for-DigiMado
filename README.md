@@ -2,7 +2,7 @@
 
 ---
 
-# 推奨フォルダ構成
+# フォルダ構成
 
 ```
 404-error-handling-and-SEO-optimization
@@ -11,8 +11,11 @@
 │       └─ check_404.yml            # GitHub Actionsの設定ファイル
 ├─ scripts
 │   └─ check_404.py                 # 実際のスクリプト本体
-├─ requirements.txt                 # Python依存パッケージのリスト
-└─ README.md                        # リポジトリ全体の説明書
+│   └─ crawl_links.py               
+├─ .gitignore
+├─ README.md                        # リポジトリ全体の説明書
+├─ flow.md               
+└─ requirements.txt                 # Python依存パッケージのリスト
 ```
 
 1. **`.github/workflows/check_404.yml`**  
