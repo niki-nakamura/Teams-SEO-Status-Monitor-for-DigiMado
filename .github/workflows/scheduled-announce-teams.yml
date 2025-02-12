@@ -1,0 +1,25 @@
+name: ScheduledTeamsAnnouncement
+
+on:
+  schedule:
+    - cron: '0 23 * * *'  # 毎日UTC0時（日本時間午前9時）に実行
+  workflow_dispatch:
+
+jobs:
+  run_script:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: pip install requests beautifulsoup4
+
+      - name: Run Teams announce script
+        run: python scripts/main_announce_teams.py
+        env:
+          TEAMS_WEBHOOK_URL2: ${{ secrets.TEAMS_WEBHOOK_URL2 }}
