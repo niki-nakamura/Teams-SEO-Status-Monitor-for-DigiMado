@@ -24,8 +24,8 @@ HEADERS = {
 
 # Teams Webhook用の設定（既存の環境変数から取得）
 TEAMS_WEBHOOK_URL = os.environ.get("TEAMS_WEBHOOK_URL")
-# Google Sheets用の設定（実際のシートIDに置き換える）
-GOOGLE_SHEET_ID = "https://docs.google.com/spreadsheets/d/1Ht9EjkZebHhm2gA6q5KR16Qs8jppSdaud-QxJZ2y7tU/edit?gid=0#gid=0"
+# Google Sheets用の設定（シートIDのみを指定する）
+GOOGLE_SHEET_ID = "1Ht9EjkZebHhm2gA6q5KR16Qs8jppSdaud-QxJZ2y7tU"  # 例：実際のシートIDに置き換える
 
 def is_internal_link(url):
     parsed = urlparse(url)
@@ -88,7 +88,8 @@ def update_google_sheet(broken):
 def send_teams_notification(broken):
     # サマリーメッセージ作成
     count = len(broken)
-    sheets_url = "https://docs.google.com/spreadsheets/d/your_google_sheet_id/edit?gid=0"  # 実際のURLに置き換える
+    # 完全なGoogle SheetsのURLを記入してください
+    sheets_url = "https://docs.google.com/spreadsheets/d/1Ht9EjkZebHhm2gA6q5KR16Qs8jppSdaud-QxJZ2y7tU/edit?gid=0"
     msg = f"【404チェック結果】\n404が {count} 件検出されました。\nこちらよりエラーURLを確認してください。\n({sheets_url})"
     
     try:
