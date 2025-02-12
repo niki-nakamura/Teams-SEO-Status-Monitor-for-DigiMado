@@ -6,11 +6,12 @@ from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
 import os
 from collections import deque
+import gspread
+from google.oauth2.service_account import Credentials
 
 # 調査対象のURL（digi-mado.jp）
 START_URL = "https://digi-mado.jp/"
 BASE_DOMAIN = "digi-mado.jp"  # 内部リンクの判定に使用
-TEAMS_WEBHOOK_URL = os.environ.get("TEAMS_WEBHOOK_URL")
 
 visited = set()
 # broken_links は (参照元, 壊れているリンク, ステータス) のタプル形式
@@ -20,6 +21,11 @@ broken_links = []
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
 }
+
+# Teams Webhook用の設定（既存の環境変数から取得）
+TEAMS_WEBHOOK_URL = os.environ.get("TEAMS_WEBHOOK_URL")
+# Google Sheets用の設定（実際のシートIDに置き換える）
+GOOGLE_SHEET_ID = "https://docs.google.com/spreadsheets/d/1Ht9EjkZebHhm2gA6q5KR16Qs8jppSdaud-QxJZ2y7tU/edit?gid=0#gid=0"
 
 def is_internal_link(url):
     parsed = urlparse(url)
@@ -66,22 +72,25 @@ def check_status(url, source):
         ref = source if source else url
         broken_links.append((ref, url, f"Error: {str(e)}"))
 
+def update_google_sheet(broken):
+    """
+    Google SheetsのA列に404（またはリンク切れ）URL、B列に検出元記事URLを追加する。
+    """
+    scope = ["https://www.googleapis.com/auth/spreadsheets"]
+    creds = Credentials.from_service_account_file("config/credentials.json", scopes=scope)
+    client = gspread.authorize(creds)
+    sheet = client.open_by_key(GOOGLE_SHEET_ID).sheet1
+
+    for source, url, status in broken:
+        row = [url, source]
+        sheet.append_row(row)
+
 def send_teams_notification(broken):
-    if not TEAMS_WEBHOOK_URL:
-        print("TEAMS_WEBHOOK_URL is not set.")
-        return
-
-    msg = "\n\n"
-    msg += "404チェック結果🗣📢\n\n"
-    msg += "👇以下の検出された404（またはリンク切れ）の情報です👇\n\n"
-
-    if not broken:
-        msg += "No broken links found!\n"
-    else:
-        for source, url, status in broken:
-            msg += f"{url} [Status: {status}]\n"
-            msg += f"検出記事元：{source}\n\n"
-
+    # サマリーメッセージ作成
+    count = len(broken)
+    sheets_url = "https://docs.google.com/spreadsheets/d/your_google_sheet_id/edit?gid=0"  # 実際のURLに置き換える
+    msg = f"【404チェック結果】\n404が {count} 件検出されました。\nこちらよりエラーURLを確認してください。\n({sheets_url})"
+    
     try:
         r = requests.post(TEAMS_WEBHOOK_URL, json={"text": msg}, headers=HEADERS, timeout=10)
         if r.status_code not in [200, 204]:
@@ -94,6 +103,7 @@ def main():
     crawl(START_URL)
     print("Crawl finished.")
     print(f"Detected {len(broken_links)} broken links.")
+    update_google_sheet(broken_links)
     send_teams_notification(broken_links)
 
 if __name__ == "__main__":
