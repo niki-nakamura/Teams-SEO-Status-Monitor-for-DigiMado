@@ -25,7 +25,7 @@ HEADERS = {
 # Teams Webhook用の設定（既存の環境変数から取得）
 TEAMS_WEBHOOK_URL = os.environ.get("TEAMS_WEBHOOK_URL")
 # Google Sheets用の設定（シートIDのみを指定する）
-GOOGLE_SHEET_ID = "1Ht9EjkZebHhm2gA6q5KR16Qs8jppSdaud-QxJZ2y7tU"  # 例：実際のシートIDに置き換える
+GOOGLE_SHEET_ID = "1Ht9EjkZebHhm2gA6q5KR16Qs8jppSdaud-QxJZ2y7tU"  # 実際のシートIDに置き換える
 
 def is_internal_link(url):
     parsed = urlparse(url)
@@ -77,7 +77,8 @@ def update_google_sheet(broken):
     Google SheetsのA列に404（またはリンク切れ）URL、B列に検出元記事URLを追加する。
     """
     scope = ["https://www.googleapis.com/auth/spreadsheets"]
-    creds = Credentials.from_service_account_file("config/credentials.json", scopes=scope)
+    # ここでは service_account.json を利用（ワークフローで作成される一時ファイル）
+    creds = Credentials.from_service_account_file("service_account.json", scopes=scope)
     client = gspread.authorize(creds)
     sheet = client.open_by_key(GOOGLE_SHEET_ID).sheet1
 
@@ -88,8 +89,7 @@ def update_google_sheet(broken):
 def send_teams_notification(broken):
     # サマリーメッセージ作成
     count = len(broken)
-    # 完全なGoogle SheetsのURLを記入してください
-    sheets_url = "https://docs.google.com/spreadsheets/d/1Ht9EjkZebHhm2gA6q5KR16Qs8jppSdaud-QxJZ2y7tU/edit?gid=0"
+    sheets_url = "https://docs.google.com/spreadsheets/d/1Ht9EjkZebHhm2gA6q5KR16Qs8jppSdaud-QxJZ2y7tU/edit?gid=0"  # 実際のURLに置き換える
     msg = f"【404チェック結果】\n404が {count} 件検出されました。\nこちらよりエラーURLを確認してください。\n({sheets_url})"
     
     try:
