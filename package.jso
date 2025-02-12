@@ -1,0 +1,8 @@
+{
+  "name": "teams-bot-search-update-monitor",
+  "version": "1.0.0",
+  "description": "Teams Bot for X tweet update",
+  "dependencies": {
+    "node-fetch": "^2.6.7"
+  }
+}
