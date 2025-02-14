@@ -1,254 +1,84 @@
-以下では、**「GitHubのプライベートリポジトリにPythonスクリプトを配置し、サイトマップからURLを取得→404チェック→Slack通知を定期実行する」** ための、推奨フォルダ構成例と具体的なファイル内容をまとめます。  
+以下は、Public Repository「niki-nakamura teams-bot-search-update-monitor」の対外向け**README.md**と**flow.md**のサンプルです。  
+フォルダ構成（例）も含めていますので、必要に応じて実態に合わせてご調整ください。
 
 ---
 
-# フォルダ構成
+## README.md
+
+# niki-nakamura teams-bot-search-update-monitor
+
+### 概要
+本リポジトリは、GitHub Actionsと各種スクリプトを活用し、WebサイトのリンクチェックやSEOアップデート、Google Search Central（旧Twitter/X）の最新情報を監視し、Microsoft Teamsへの通知やGoogle Sheetsへのログ更新を自動化する仕組みを提供します。
+
+### 主な機能
+- **404エラーチェック**  
+  サイトマップ（例: [digi-mado.jp/sitemap.xml](https://digi-mado.jp/sitemap.xml)）をもとに全URLを取得し、各ページのHTTPステータスを確認。404エラーが発生した場合、Teamsへ通知します。
+
+- **リンクチェッカー（クロール）**  
+  サイト内外のリンクをクロールし、リンク切れ（404エラー）の検出と検出元ページの記録を実施。検出結果はGoogle Sheetsに記録され、Teamsへサマリーメッセージが送信されます。
+
+- **Google Search Central（旧Twitter/X）更新監視**  
+  Twitter APIを利用してGoogle Search Centralアカウントの最新ツイートをチェック。新規ツイートがある場合、Teamsへ詳細情報付きで通知し、最新ツイートIDをリポジトリにコミットします。
+
+- **SEOアップデート状況のモニタリング**  
+  Google Search StatusからSEOアップデート情報を取得し、特定の状態（例："Available" 以外）の場合、Teamsへ通知を送信します。
+
+### フォルダ構成
 
 ```
-404-error-handling-and-SEO-optimization
-├─ .github
-│   └─ workflows
-│       ├─ check_404.yml              # 既存：404チェック用
-│       └─ tweet_monitor_teams.yml    # 新規：Teams向けツイート監視ワークフロー
-├─ scripts
-│   ├─ check_404.py                   # 既存：404チェック用スクリプト
-│   ├─ crawl_links.py                 # 既存：リンククローラー
-│   ├─ test_slack.js                  # 既存：Slack送信用テストスクリプト
-│   ├─ monitor.js                     # 既存：Slack用ツイート監視スクリプト
-│   ├─ test_teams.js                  # 新規：Teams送信用テストスクリプト
-│   └─ monitor_teams.js               # 新規：Teams用ツイート監視スクリプト
-├─ .gitignore
-├─ README.md                        # リポジトリ全体の説明書（必要に応じTeamsボットの説明を追記）
-├─ flow.md               
-└─ requirements.txt                 # Python依存パッケージのリスト
-
+.
+├── .github
+│   └── workflows
+│       ├── check_404.yml
+│       ├── crawl_links.yml
+│       ├── test.yml
+│       └── tweet_monitor_teams.yml
+├── scripts
+│   ├── check_404.py
+│   ├── crawl_links.py
+│   ├── main_announce_teams.py
+│   ├── monitor.js
+│   ├── monitor_teams.js
+│   ├── test_slack.js
+│   └── test_teams.js
+├── .gitignore
+├── README.md
+├── flow.md
+├── latest_tweet_id.json
+├── package.json
+├── requirements.txt
+└── ...
 ```
 
-1. **`.github/workflows/check_404.yml`**  
-   - GitHub Actionsで定期実行するためのワークフローファイルです。  
-2. **`scripts/check_404.py`**  
-   - サイトマップを読み取り、URLを抽出して404を検出し、Slackに通知するPythonスクリプト。  
-3. **`requirements.txt`**  
-   - `requests`など、Pythonスクリプト実行に必要なライブラリを明記します。  
-4. **`README.md`**  
-   - セットアップ手順や使い方をドキュメント化しておくと、プロジェクトのメンバーや将来の運用で助かります。
+### セットアップ
+1. **GitHub Secrets の設定**  
+   本リポジトリでは以下のシークレットを利用します。
+   - `TEAMS_WEBHOOK_URL`：Teams通知用Webhook URL  
+   - `TEAMS_WEBHOOK_URL2`：ツイート監視およびSEOアップデート通知用Webhook URL  
+   - `TWITTER_BEARER_TOKEN`：Twitter API用のBearer Token  
+   - `GCP_SERVICE_ACCOUNT_JSON`：Google Sheets連携用のサービスアカウントJSON
 
----
+2. **Googleサービスアカウントの作成とシート設定**  
+   - Google Sheets APIの有効化  
+   - サービスアカウントの作成後、JSONキーを取得し、上記シークレットに登録  
+   - シートID（`scripts/crawl_links.py`内の`GOOGLE_SHEET_ID`）を適切なGoogle SheetsのIDに変更
 
-# ファイル内容サンプル
+3. **ワークフローの利用方法**  
+   各ワークフローはGitHub Actions上で手動実行（workflow_dispatch）またはスケジュール実行（例：30分おき）となっており、必要に応じて実行タイミングを調整してください。
 
-## 1. `.github/workflows/check_404.yml`
+### 使用方法
+- **404チェック**  
+  GitHub Actions上で「Check 404」ワークフロー（`check_404.yml`）を実行すると、対象サイトの全URLをチェックし、Teamsに結果を通知します。
 
-```yaml
-name: Check 404
+- **リンクチェッカー**  
+  「Link Checker」ワークフロー（`crawl_links.yml`）を実行すると、サイトをクロールしてリンク切れを検出。Google Sheetsへ自動でログを更新し、Teamsに通知します。
 
-# スケジュールの設定
-# 下記のcronはUTC時刻で "0 2 * * *" = 毎日AM2時 (日本時間で11時) に実行
-on:
-  schedule:
-    - cron: '0 2 * * *'
-  workflow_dispatch:  # 手動トリガーでも実行可能にしておく
+- **Google Search Central更新監視**  
+  定期的に実行される「Monitor GoogleSearchCentral Tweets to Teams」ワークフロー（`tweet_monitor_teams.yml`）により、最新ツイートの確認と通知が行われ、変更があればリポジトリ内の`latest_tweet_id.json`が更新されます。
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
+### 開発・貢献
+ご意見やプルリクエストは大歓迎です。  
+不具合報告や機能追加のリクエストはGitHub Issuesをご利用ください。
 
-    steps:
-      - name: Check out the repo
-        uses: actions/checkout@v2
-
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.x'
-
-      - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
-
-      - name: Run 404 check script
-        # secrets.SLACK_WEBHOOK_URL はGitHubの「Settings > Secrets and variables > Actions」で登録
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-        run: |
-          python scripts/check_404.py
-```
-
-### ポイント
-- `on.schedule.cron` で毎日午前2時(UTC)に定期実行。日本時間では午前11時になります。  
-- `workflow_dispatch` で「Actions」タブから手動実行も可能。  
-- `SLACK_WEBHOOK_URL` はGitHubリポジトリの「Settings > Secrets and variables > Actions」から**シークレット変数**として登録してください。
-
----
-
-## 2. `scripts/check_404.py`
-
-以下のPythonスクリプトは、  
-- **トップのサイトマップ**(`https://example-apps.jp/sitemap.xml`)を取得  
-- 中に列挙されている**サブサイトマップ**(例えば `sitemap-pt-post-p1-2025-01.xml` など)を再帰的に取得し、  
-- そこに含まれる**全URL**を`requests.get()`でチェック  
-- ステータスコードが**404**のURLだけをSlackに通知  
-という流れのサンプルです。
-
-```python
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
-import requests
-import xml.etree.ElementTree as ET
-import os
-
-# SlackのWebhook URL（GitHub Secretsにて登録し、envで読み込む）
-SLACK_WEBHOOK_URL = os.environ.get("SLACK_WEBHOOK_URL")
-
-# メインサイトマップ
-MAIN_SITEMAP_URL = "https://example-apps.jp/sitemap.xml"
-
-def fetch_sitemap(url):
-    """
-    指定したサイトマップURLを取得し、XMLのルート要素を返す。
-    失敗時はNone。
-    """
-    try:
-        r = requests.get(url, timeout=20)
-        if r.status_code == 200:
-            root = ET.fromstring(r.text)
-            return root
-    except Exception as e:
-        print(f"[Error] Failed to fetch sitemap: {url} \n {e}")
-    return None
-
-def extract_sitemap_urls(sitemap_root):
-    """
-    ルート要素から <loc> を持つサブサイトマップURLをリストで返す。
-    たとえば <sitemap><loc>～</loc></sitemap> のURLが対象。
-    """
-    urls = []
-    if sitemap_root is None:
-        return urls
-    ns = {'ns': 'http://www.sitemaps.org/schemas/sitemap/0.9'}
-    # サイトマップインデックスの場合は <sitemap> タグ内に <loc> がある
-    for sitemap in sitemap_root.findall('ns:sitemap', ns):
-        loc = sitemap.find('ns:loc', ns)
-        if loc is not None and loc.text:
-            urls.append(loc.text.strip())
-    return urls
-
-def extract_page_urls(sitemap_root):
-    """
-    サブサイトマップ（URLリストが直接含まれるもの）から <url><loc>～</loc></url> のURLを取得。
-    """
-    urls = []
-    if sitemap_root is None:
-        return urls
-    ns = {'ns': 'http://www.sitemaps.org/schemas/sitemap/0.9'}
-    for url_elem in sitemap_root.findall('ns:url', ns):
-        loc = url_elem.find('ns:loc', ns)
-        if loc is not None and loc.text:
-            urls.append(loc.text.strip())
-    return urls
-
-def get_all_urls_from_sitemaps(url):
-    """
-    メインサイトマップ -> サブサイトマップ -> 各URL の階層を再帰的にたどり、
-    すべてのURL（最終的にWebページへのリンク）を集めて返す。
-    """
-    all_urls = []
-    root = fetch_sitemap(url)
-    if root is None:
-        return all_urls
-
-    # サブサイトマップのURL一覧を抜き出す
-    subs = extract_sitemap_urls(root)
-
-    if subs:
-        # サブサイトマップがある場合、再帰的にたどる
-        for sub in subs:
-            sub_root = fetch_sitemap(sub)
-            # さらにサブサブがあるかもしれない
-            deeper_subs = extract_sitemap_urls(sub_root)
-            if deeper_subs:
-                for deeper_sub in deeper_subs:
-                    deeper_root = fetch_sitemap(deeper_sub)
-                    all_urls.extend(extract_page_urls(deeper_root))
-            else:
-                # ここに直接URLが含まれているはず
-                all_urls.extend(extract_page_urls(sub_root))
-    else:
-        # サブサイトマップがない場合、直接URLが含まれている可能性あり
-        all_urls.extend(extract_page_urls(root))
-
-    return all_urls
-
-def check_404_urls(url_list):
-    """
-    GETリクエストして404のURLをリストで返す。
-    """
-    not_found = []
-    for u in url_list:
-        try:
-            resp = requests.get(u, timeout=10)
-            if resp.status_code == 404:
-                not_found.append(u)
-        except Exception as e:
-            # ネットワークエラーやタイムアウトはとりあえず404扱いにはせず、ログだけ残す
-            print(f"[Warning] Request error for {u}: {e}")
-    return not_found
-
-def send_slack_notification(message):
-    """
-    Slack Webhookに対してメッセージをPOSTする。
-    """
-    if not SLACK_WEBHOOK_URL:
-        print("[Error] SLACK_WEBHOOK_URL is not set.")
-        return
-
-    payload = {"text": message}
-    try:
-        r = requests.post(SLACK_WEBHOOK_URL, json=payload, timeout=10)
-        if r.status_code != 200:
-            print(f"[Error] Slack responded with status {r.status_code}: {r.text}")
-    except Exception as e:
-        print(f"[Error] Failed to send Slack notification: {e}")
-
-def main():
-    print("[Info] Starting 404 check ...")
-
-    # 1) サイトマップから全URLを抽出
-    all_urls = get_all_urls_from_sitemaps(MAIN_SITEMAP_URL)
-    print(f"[Info] Found {len(all_urls)} URLs in sitemap(s).")
-
-    # 2) 404のURLをチェック
-    not_found_urls = check_404_urls(all_urls)
-
-    # 3) Slack通知
-    if not not_found_urls:
-        message = "【404チェック結果】\n404は検出されませんでした。"
-    else:
-        message = "【404チェック結果】\n以下のURLが404でした:\n" + "\n".join(not_found_urls)
-
-    print("[Info] Sending Slack notification...")
-    send_slack_notification(message)
-    print("[Info] Done.")
-
-if __name__ == "__main__":
-    main()
-```
-
-### スクリプトの動作概要
-1. **`MAIN_SITEMAP_URL`**（`https://example-apps.jp/sitemap.xml`）を取得。  
-2. **`extract_sitemap_urls()`** で「サブサイトマップ」があるか確認し、再帰的にたどる。  
-3. **`extract_page_urls()`** で実際の「投稿ページのURL」を抽出。  
-4. 全URLに対し**GETリクエスト**を送信し、**`404`のみ抽出**。  
-5. Slack Webhookへ結果を通知（検出件数が0なら「404はありません」報告）。
-
----
-
-## 3. `requirements.txt`
-
-```text
-requests>=2.0
-```
-
-- スクリプトで使うライブラリのバージョンを指定。  
-- GitHub Actionsの「Install dependencies」ステップで `pip install -r requirements.txt` が実行されます。
+### ライセンス
+本プロジェクトはMITライセンスの下で提供されています。詳細は[LICENSE](LICENSE)をご確認ください。
