@@ -1,7 +1,7 @@
 
 # README.md
 
-# teams-bot-search-update-monitor
+# Teams-SEO-Status-Monitor-for-DigiMado
 
 GitHub Actions を用いて以下のタスクを自動化し、結果を Microsoft Teams (以下、Teams) に通知するリポジトリです。
 
