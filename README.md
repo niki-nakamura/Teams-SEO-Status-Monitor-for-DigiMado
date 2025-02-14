@@ -1,7 +1,3 @@
-以下は、Public Repository「niki-nakamura teams-bot-search-update-monitor」の対外向け**README.md**と**flow.md**のサンプルです。  
-フォルダ構成（例）も含めていますので、必要に応じて実態に合わせてご調整ください。
-
----
 
 ## README.md
 
