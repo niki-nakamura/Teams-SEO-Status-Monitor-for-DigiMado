@@ -11,9 +11,7 @@ from google.oauth2.service_account import Credentials
 
 # クロール対象のURLは以下の3つのみ（/以降のすべてのURLが対象）
 ALLOWED_SOURCE_PREFIXES = [
-    "https://digi-mado.jp/media/column/",
-    "https://digi-mado.jp/media/category/",
-    "https://digi-mado.jp/media/app/"
+    "https://digi-mado.jp/article/"
 ]
 
 BASE_DOMAIN = "digi-mado.jp"  # 内部リンクの判定に使用
@@ -34,7 +32,7 @@ HEADERS = {
 # Microsoft Teams Webhook 用の設定（GitHub Secrets等で設定）
 TEAMS_WEBHOOK_URL = os.environ.get("TEAMS_WEBHOOK_URL")
 # Google Sheets 用の設定（シートIDのみを指定する）
-GOOGLE_SHEET_ID = "1DrEs-tAk2zlqKXBzVIwl2cbo_m7x39ySCKUjg7y_o7I"
+GOOGLE_SHEET_ID = "1Ht9EjkZebHhm2gA6q5KR16Qs8jppSdaud-QxJZ2y7tU"
 
 def is_internal_link(url):
     """
