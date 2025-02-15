@@ -27,6 +27,7 @@ jobs:
           echo "$GCP_SERVICE_ACCOUNT_JSON" > service_account.json
 
       - name: Run crawler
+        # 対象サイトは Pythonスクリプト側で「https://digi-mado.jp/」に変更済み
         env:
           TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
         run: |
