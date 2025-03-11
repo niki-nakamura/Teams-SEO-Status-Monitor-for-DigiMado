@@ -84,27 +84,26 @@ function saveLatestTweetIdToFile(tweetId) {
 }
 
 /** Twitter APIで最新ツイートを取得 */
-async function fetchLatestTweet() {
-  const url = `https://api.twitter.com/2/users/${TARGET_USER_ID}/tweets`
-            + `?max_results=5`
-            + `&tweet.fields=created_at,text`
-            + `&expansions=attachments.media_keys`
-            + `&media.fields=url,preview_image_url`;
+async function fetchLatestTweet(retryCount = 0) {
+  const res = await fetch(url, { headers: { Authorization: `Bearer ${TWITTER_BEARER_TOKEN}` }});
 
-  const res = await fetch(url, {
-    headers: {
-      'Authorization': `Bearer ${TWITTER_BEARER_TOKEN}`
-    }
-  });
-
-  // レート制限の場合の再試行処理
+  // レート制限
   if (res.status === 429) {
+    // 既定の最大リトライ数を超えていれば諦める
+    if (retryCount >= 1) {
+      // もしくは適宜回数調整
+      console.error('Rate limit exceeded. Already retried once, giving up...');
+      return null; // ← ここは null返却や throw Error など運用に応じて
+    }
+
     const resetTime = res.headers.get("x-rate-limit-reset");
     const now = Math.floor(Date.now() / 1000);
     const waitSeconds = resetTime ? resetTime - now : 60;
     console.error(`Rate limit exceeded. Waiting for ${waitSeconds} seconds before retrying.`);
     await new Promise(resolve => setTimeout(resolve, waitSeconds * 1000));
-    return fetchLatestTweet();
+
+    // リトライ
+    return fetchLatestTweet(retryCount + 1);
   }
 
   if (!res.ok) {
