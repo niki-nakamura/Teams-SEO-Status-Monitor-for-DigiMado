@@ -3,12 +3,11 @@ name: Monitor GoogleSearchCentral Tweets to Teams
 on:
   workflow_dispatch:
   schedule:
-    - cron: '*/30 * * * *'  # 30分おきに実行
+    - cron: '0 */3 * * *'  # ← 3時間おきに実行
 
 jobs:
   check-for-new-tweets-teams:
     runs-on: ubuntu-latest
-    # latest_tweet_id.json のコミット・プッシュ権限
     permissions:
       contents: write
     steps:
@@ -22,11 +21,9 @@ jobs:
         with:
           node-version: 18
 
-      # node-fetch を利用するためインストール
       - name: Install dependencies
         run: npm install node-fetch@2
 
-      # Teams向けの監視スクリプトを実行
       - name: Run tweet monitoring script for Teams
         run: node scripts/monitor_teams.js
         env:
