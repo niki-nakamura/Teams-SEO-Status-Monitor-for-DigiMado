@@ -1,37 +1,35 @@
-name: Link Checker
+# .github/workflows/crawl_links.yml
 
+name: Crawl Site Links
 on:
-  workflow_dispatch:
+  schedule:
+    - cron: '0 5 * * *'  # 毎日5:00にクローリング（例）
+  workflow_dispatch: {}   # 手動実行も可能
 
 jobs:
-  build:
+  crawl:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write   # リポジトリ内容への書き込みを許可（リンクファイルをコミットするため）
     steps:
-      - name: Check out the repository
-        uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
-          python-version: '3.x'
+          node-version: '18.x'
 
       - name: Install dependencies
-        run: |
-          pip install --upgrade pip
-          pip install -r requirements.txt
+        run: npm ci
 
-      - name: Set up GCP service account file
-        env:
-          GCP_SERVICE_ACCOUNT_JSON: ${{ secrets.GCP_SERVICE_ACCOUNT_JSON }}
-        run: |
-          echo "$GCP_SERVICE_ACCOUNT_JSON" > service_account.json
+      - name: Run crawl script
+        run: node scripts/crawl_links.js
 
-      - name: Run crawler
-        # 対象サイトは Pythonスクリプト側で「https://digi-mado.jp/」に変更済み
-        env:
-          TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
+      - name: Commit crawled links file
         run: |
-          python scripts/crawl_links.py
-
-      - name: Clean up service account file
-        run: rm service_account.json
+          git config --local user.name "github-actions"
+          git config --local user.email "actions@users.noreply.github.com"
+          git add links.json
+          git commit -m "Update crawled links [skip ci]" || echo "No changes to commit"
+          git push origin HEAD:${{ github.ref }}
