@@ -1,31 +1,38 @@
-name: Monitor GoogleSearchCentral Tweets to Teams
+# .github/workflows/tweet_monitor_teams.yml
 
+name: Tweet Monitor Teams Status
 on:
-  workflow_dispatch:
   schedule:
-    - cron: '0 */3 * * *'  # ← 3時間おきに実行
+    - cron: '0 6 * * *'   # 毎日6:00に実行（例）
+  workflow_dispatch: {}
 
 jobs:
-  check-for-new-tweets-teams:
+  tweet-status:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
-      - name: Check out repository
+      - name: Checkout repository
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
 
-      - name: Set up Node
+      - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: '18.x'
 
       - name: Install dependencies
-        run: npm install node-fetch@2
+        run: npm ci
 
-      - name: Run tweet monitoring script for Teams
-        run: node scripts/monitor_teams.js
-        env:
-          TEAMS_WEBHOOK_URL2: ${{ secrets.TEAMS_WEBHOOK_URL2 }}
-          TWITTER_BEARER_TOKEN: ${{ secrets.TWITTER_BEARER_TOKEN }}
+      - name: Run monitor_teams script
+        id: monitor
+        shell: bash
+        run: |
+          output=$(node scripts/monitor_teams.js)
+          echo "tweet_msg=$output" >> $GITHUB_OUTPUT
+
+      - name: Send Tweet
+        uses: ethomson/send-tweet-action@v1
+        with:
+          status: ${{ steps.monitor.outputs.tweet_msg }}
+          consumer-key: ${{ secrets.TWITTER_CONSUMER_API_KEY }}
+          consumer-secret: ${{ secrets.TWITTER_CONSUMER_API_SECRET }}
+          access-token: ${{ secrets.TWITTER_ACCESS_TOKEN }}
+          access-token-secret: ${{ secrets.TWITTER_ACCESS_TOKEN_SECRET }}
