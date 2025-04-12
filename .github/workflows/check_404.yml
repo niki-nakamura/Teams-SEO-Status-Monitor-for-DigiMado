@@ -1,29 +1,31 @@
-name: Check 404
+# .github/workflows/check_404.yml
 
-# 手動トリガーのみで実行
+name: Check Broken Links (404)
 on:
-  workflow_dispatch:
+  push:
+    paths:
+      - 'links.json'        # リンク一覧ファイルが更新されたときに起動
+  schedule:
+    - cron: '30 5 * * *'    # 安全のため定期実行も設定（毎日5:30、crawl後想定）
+  workflow_dispatch: {}
 
 jobs:
-  build:
+  check-404:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Check out the repo
-        uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
-          python-version: '3.x'
+          node-version: '18.x'
 
       - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
+        run: npm ci
 
       - name: Run 404 check script
-        # secrets.TEAMS_WEBHOOK_URL は GitHub の「Settings > Secrets and variables > Actions」で登録してください
-        env:
-          TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
-        run: |
-          python scripts/check_404.py
+        run: node scripts/check_404.js
+
+      # （チェック結果は例えば broken_links.json に保存する実装を想定。
+      #  そのファイルは次の workflow で使用するため、このjob内でコミットせずワークスペースに残す。）
