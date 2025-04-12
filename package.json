@@ -1,8 +1,20 @@
 {
-  "name": "teams-bot-search-update-monitor",
+  "name": "teams-seo-status-monitor-for-digimado",
   "version": "1.0.0",
-  "description": "Teams Bot for X tweet update",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "crawl": "node scripts/crawl_links.js",
+    "check": "node scripts/check_404.js",
+    "monitor": "node scripts/monitor_teams.js",
+    "test": "npm run crawl && npm run check && npm run monitor"
+  },
   "dependencies": {
-    "node-fetch": "^2.6.7"
+    "axios": "^0.27.2",
+    "cheerio": "^1.0.0-rc.10",
+    "...": "..." 
+  },
+  "devDependencies": {
+    // （必要に応じてテストフレームワークなどを記載します）
   }
 }
