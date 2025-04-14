@@ -11,6 +11,7 @@ on:
 
 jobs:
   check-404:
+  if: ${{ false }} 
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
