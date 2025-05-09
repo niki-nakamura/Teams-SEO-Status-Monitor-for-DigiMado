@@ -1,0 +1,26 @@
+name: Send Tweet to Teams
+
+on:
+  schedule:
+    - cron: '0 21 * * *'   # 毎日21:00 UTC に実行 (JST 6:00に相当)
+  workflow_dispatch:
+
+jobs:
+  send-latest-tweet:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'  # Python 3.8+ 推奨
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run bot script
+        env:
+          TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
+        run: python main.py
