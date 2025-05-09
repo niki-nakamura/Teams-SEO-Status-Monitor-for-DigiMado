@@ -1,4 +1,2 @@
-requests>=2.0
-beautifulsoup4>=4.0
-gspread>=5.0
-google-auth>=2.0
+snscrape==0.7.0.20230622
+requests==2.31.0
