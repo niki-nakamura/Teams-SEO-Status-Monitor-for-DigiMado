@@ -1,26 +1,24 @@
-name: Send Tweet to Teams
-
+name: Scheduled Twitter Scrape
 on:
   schedule:
-    - cron: '0 21 * * *'   # 毎日21:00 UTC に実行 (JST 6:00に相当)
-  workflow_dispatch:
+    - cron: '0 9 * * *'
 
 jobs:
-  send-latest-tweet:
+  scrape:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v3
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v3
         with:
-          python-version: '3.10'  # Python 3.8+ 推奨
+          python-version: '3.9'
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: |
+          pip install -r requirements.txt
+          pip install --upgrade git+https://github.com/JustAnotherArchivist/snscrape.git
 
-      - name: Run bot script
-        env:
-          TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
+      - name: Run scraper
         run: python main.py
