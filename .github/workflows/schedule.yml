@@ -1,7 +1,11 @@
 name: Scheduled Twitter Scrape
+
 on:
   schedule:
+    # 毎日 09:00 UTC（JST 18:00）に自動実行
     - cron: '0 9 * * *'
+  # 手動実行用トリガー
+  workflow_dispatch:
 
 jobs:
   scrape:
